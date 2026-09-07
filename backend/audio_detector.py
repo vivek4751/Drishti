@@ -54,7 +54,11 @@ class AudioDeepfakeDetector:
             print(f"Reason: {e}")
             print("This is likely due to an incomplete Git LFS download. Using MOCK inference for audio.\n")
             self._model_loaded = False
-
+        except Exception as e:
+            print(f"\n[WARNING] Could not load audio model '{self.model_name}'.")
+            print(f"Reason: {e}")
+            print("Using FALLBACK mode with statistical analysis only.\n")
+            self._model_loaded = False
     # ── Audio I/O ──────────────────────────────────────────────────────────
 
     def _load_audio_as_numpy(self, file_path: str, target_sr: int = 16000):
@@ -449,6 +453,8 @@ class AudioDeepfakeDetector:
     # ── Ensemble & Final Verdict ──────────────────────────────────────────
 
     def analyze_audio(self, file_path: str):
+        if not getattr(self, "_model_loaded", False):
+            print("[INFO] Using statistical-only analysis (neural model not available)")
         if not getattr(self, "_model_loaded", False):
             import random
             print("[WARN] Using MOCK audio inference since the safetensors failed to load.")

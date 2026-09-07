@@ -1,28 +1,30 @@
-[System.IO.File]::WriteAllText(
-    (Join-Path (Get-Location) ".gitignore"),
-    @"
 # Python
-backend/venv/
-backend/.venv/
-*.pyc
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
 
-# Node
-frontend/node_modules/
-frontend/dist/
-
-# Environment files
-*.env
-.env.local
-
-# Large models / temp
-backend/models/
-backend/temp_uploads/
-backend/waha_storage/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
-*.log
-"@,
-    [System.Text.UTF8Encoding]::new($false)
-)
+Thumbs.db
+
+# Project
+temp_uploads/
+*.pth
+*.safetensors
+*.bin
+models/niriksha-audio-v1/
+.cache/
