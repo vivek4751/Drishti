@@ -1,0 +1,41 @@
+/* ================================================================
+   FILE: frontend/src/index.css  (REPLACE ENTIRE FILE)
+   ================================================================ */
+
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  /* Clean white card with soft border + subtle shadow */
+  .clay-card {
+    @apply bg-white rounded-3xl border border-slate-200/80;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+                0 8px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Solid indigo primary button */
+  .clay-btn {
+    @apply bg-indigo-600 text-white rounded-2xl font-bold transition-all active:scale-95 border-0;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  }
+  .clay-btn:hover {
+    @apply bg-indigo-500;
+  }
+
+  /* Tab pills */
+  .clay-tab {
+    @apply bg-transparent text-slate-500 rounded-2xl font-bold transition-all active:scale-95 border border-transparent;
+  }
+  .clay-tab:hover {
+    @apply bg-slate-100 text-slate-700;
+  }
+  .clay-tab.active {
+    @apply bg-indigo-600 text-white;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  }
+}
