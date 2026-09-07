@@ -26,5 +26,6 @@ try {
   )
 } catch (e) {
   console.error("Render error:", e);
-  document.body.innerHTML += '<div style="color:red;font-size:20px;position:fixed;top:100px;left:0;z-index:9999;background:yellow;padding:1rem;">Render Error: ' + e.message + '</div>';
+  const message = e instanceof Error ? e.message : String(e);
+  document.body.innerHTML += '<div style="color:red;font-size:20px;position:fixed;top:100px;left:0;z-index:9999;background:yellow;padding:1rem;">Render Error: ' + message + '</div>';
 }

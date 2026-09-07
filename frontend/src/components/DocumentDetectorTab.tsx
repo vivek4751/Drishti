@@ -1,18 +1,10 @@
 import { useState } from 'react';
-import { UploadCloud, FileText, CheckCircle, AlertOctagon, Activity, Zap, Crown, Shield, Fingerprint, Layers, Download, Search, BarChart3, ScanEye, FileSearch, Lock } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, AlertOctagon, Activity, Crown, Download } from 'lucide-react';
 
 interface DocumentDetectorTabProps {
   credits: number;
   setCredits: (val: number) => void;
 }
-
-const ANALYSIS_KEYS = [
-  { key: 'metadata_forensics', label: 'Metadata', Icon: Search },
-  { key: 'structural_analysis', label: 'Structure', Icon: BarChart3 },
-  { key: 'visual_ela', label: 'Visual/ELA', Icon: ScanEye },
-  { key: 'text_consistency', label: 'Text Analysis', Icon: FileSearch },
-  { key: 'digital_signature', label: 'Signature', Icon: Lock },
-];
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
 

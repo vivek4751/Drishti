@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Activity, Layers, Image as ImageIcon, FileVideo, Music, FileText, LogOut, LogIn, Loader2, Zap } from 'lucide-react';
+import { Layers, Image as ImageIcon, FileVideo, Music, FileText, LogOut, LogIn, Loader2, Zap } from 'lucide-react';
 import { useAuth0 } from '@auth0/auth0-react';
 import DetectorTab from './components/DetectorTab';
 import ImageDetectorTab from './components/ImageDetectorTab';

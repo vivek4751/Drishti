@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UploadCloud, FileVideo, Image as ImageIcon, CheckCircle, AlertOctagon, Activity, FileAudio, FileText, Zap, Crown, Download, Brain, BarChart3, Music, Mic } from 'lucide-react';
+import { UploadCloud, FileVideo, Image as ImageIcon, CheckCircle, AlertOctagon, Activity, FileAudio, FileText, Crown, Download, Brain, BarChart3, Music, Mic } from 'lucide-react';
 
 interface DetectorTabProps {
   acceptType: string;
