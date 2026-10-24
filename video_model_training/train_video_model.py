@@ -42,7 +42,7 @@ def run_training_loop(model, train_loader, val_loader, criterion, optimizer, sca
             videos, labels = videos.to(device), labels.to(device)
             
             # AMP: Mixed Precision Forward pass to save VRAM and train faster
-            with torch.amp.autocast('cuda'):
+            with torch.cuda.amp.autocast(enabled=device.type == 'cuda'):
                 outputs = model(videos)
                 loss = criterion(outputs, labels)
                 loss = loss / ACCUMULATION_STEPS # Normalize loss for accumulation
@@ -76,7 +76,7 @@ def run_training_loop(model, train_loader, val_loader, criterion, optimizer, sca
                 videos, labels = videos.to(device), labels.to(device)
                 
                 # We can also use AMP on validation
-                with torch.amp.autocast('cuda'):
+                with torch.cuda.amp.autocast(enabled=device.type == 'cuda'):
                     outputs = model(videos)
                     loss = criterion(outputs, labels)
                     
@@ -134,7 +134,7 @@ def main():
     criterion = nn.BCEWithLogitsLoss()
     
     # PyTorch AMP scaler for Mixed Precision Training
-    scaler = torch.amp.GradScaler('cuda')
+    scaler = torch.cuda.amp.GradScaler(enabled=device.type == 'cuda')
     best_val_loss = float('inf')
 
     # ========================== STAGE 1 ==========================

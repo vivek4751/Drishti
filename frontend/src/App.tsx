@@ -18,10 +18,10 @@ function App() {
 
   const TABS = [
     { id: 'COMBINED', label: 'All-in-One Detector', icon: Layers, accept: 'image/*,video/*,audio/*', desc: 'Upload any image, video, or audio file. Our multimodal AI engine will automatically route it to the appropriate model for deepfake analysis.' },
-    { id: 'IMAGE', label: 'Image Forensics', icon: ImageIcon, accept: 'image/*', desc: 'Specially tuned Xception/EfficientNet engine designed to detect GAN artifacts and pixel-level inconsistencies in static images.' },
-    { id: 'VIDEO', label: 'Video Analysis', icon: FileVideo, accept: 'video/*', desc: 'Analyzes temporal consistency across frames, utilizing lip-sync matching and facial landmark drift checking.' },
-    { id: 'AUDIO', label: 'Audio & Voice', icon: Music, accept: 'audio/*', desc: 'Uses Wav2Vec2 and LCNN to extract spectrogram features detecting modern voice cloning (TTS, voice-conversion).' },
-    { id: 'DOCUMENT', label: 'Document Forensics', icon: FileText, accept: 'application/pdf,.pdf', desc: 'Multi-layer PDF forensic analysis: metadata tampering, structural anomalies, image ELA, AI-generated text detection, and digital signature verification.' }
+    { id: 'IMAGE', label: 'Image Forensics', icon: ImageIcon, accept: 'image/*', desc: 'Uses a pretrained image classifier to check for signs of AI-generated imagery.' },
+    { id: 'VIDEO', label: 'Video Analysis', icon: FileVideo, accept: 'video/*', desc: 'Uses face crops, EfficientNet-B4 and an LSTM to classify sampled video segments.' },
+    { id: 'AUDIO', label: 'Audio & Voice', icon: Music, accept: 'audio/*', desc: 'Combines Wav2Vec2 predictions with spectral, pitch and other signal checks.' },
+    { id: 'DOCUMENT', label: 'Document Forensics', icon: FileText, accept: 'application/pdf,.pdf', desc: 'Checks PDF metadata, structure, image recompression patterns, text consistency and signature indicators.' }
   ];
 
   const currentTabInfo = TABS.find(t => t.id === activeTab);
