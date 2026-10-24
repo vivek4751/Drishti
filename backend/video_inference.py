@@ -56,18 +56,14 @@ _model = None
 def get_model():
     global _model
     if _model is None:
-        model_path = os.path.join(os.path.dirname(__file__), "..", "video_model_training", "video_deepfake_model.pth")
-        _model = VideoDeepfakeModel(sequence_length=NUM_FRAMES_PER_SEQ).to(DEVICE)
-        
-        # Load weights safely, we map_location to ensure it loads even if GPU/CPU state changes
-        try:
-            _model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-            print("Successfully loaded trained deepfake model weights!")
-        except Exception as e:
-            print(f"Warning: Could not load model file {model_path}. Error: {str(e)}")
-            print("Using untrained fallback weights for development purposes.")
-            
-        _model.eval()
+        model_path = os.getenv("VIDEO_MODEL_PATH", os.path.join(
+            os.path.dirname(__file__), "..", "video_model_training", "video_deepfake_model.pth"))
+        if not os.path.isfile(model_path):
+            raise RuntimeError("Trained video checkpoint missing; no prediction was produced")
+        candidate = VideoDeepfakeModel(sequence_length=NUM_FRAMES_PER_SEQ).to(DEVICE)
+        candidate.load_state_dict(torch.load(model_path, map_location=DEVICE, weights_only=True))
+        candidate.eval()
+        _model = candidate
     return _model
 
 def analyze_video(video_path: str):
@@ -77,6 +73,7 @@ def analyze_video(video_path: str):
     running each chunk through the Video Deepfake model, flagging it if ANY block
     contains a deepfake anomaly.
     """
+    get_model()  # Fail before decoding if the trained checkpoint is missing.
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise ValueError("Could not open video file.")
@@ -95,7 +92,7 @@ def analyze_video(video_path: str):
     stride_frames = int(fps) 
     
     # Calculate starting frame index for every chunk we want to pull
-    start_frames = list(range(0, total_frames - NUM_FRAMES_PER_SEQ, stride_frames))
+    start_frames = list(range(0, total_frames - NUM_FRAMES_PER_SEQ + 1, max(1, stride_frames)))
     
     # Prevent extracting too many chunks on very long movies (cap at 40 chunks / ~40 seconds distributed)
     if len(start_frames) > MAX_CHUNKS_TO_ANALYZE:
@@ -142,16 +139,18 @@ def analyze_video(video_path: str):
     if len(chunked_sequences) == 0:
         raise ValueError("No continuous face sequences could be detected in the video.")
         
-    # Run Inference on all continuous chunks in a single GPU batch
-    # Shape: (Num_Chunks, 15, 3, 299, 299)
-    tensor_batch = torch.stack(chunked_sequences).to(DEVICE)
-    
+    # Keep the GPU batch bounded even when many timeline segments are sampled.
     model = get_model()
+    batch_size = max(1, int(os.getenv("VIDEO_INFERENCE_BATCH_SIZE", "1")))
+    predictions = []
     with torch.no_grad():
-        with torch.amp.autocast(device_type=DEVICE.type if DEVICE.type == 'cuda' else 'cpu', enabled=DEVICE.type=='cuda'):
-            raw_logits = model(tensor_batch) # Returns probability for EACH sequence block
-            fake_probs = torch.sigmoid(raw_logits).cpu().numpy().flatten()
-            
+        for offset in range(0, len(chunked_sequences), batch_size):
+            batch = torch.stack(chunked_sequences[offset:offset + batch_size]).to(DEVICE)
+            with torch.amp.autocast(device_type=DEVICE.type, enabled=DEVICE.type == 'cuda'):
+                logits = model(batch)
+            predictions.append(torch.sigmoid(logits).cpu().numpy().flatten())
+    fake_probs = np.concatenate(predictions)
+
     # Whole-Video Analysis Strategy: 
     # If any specific continuous 15-frame block spikes as FAKE, we flag the whole video. 
     # This catches short AI face-swaps in the middle of otherwise real videos!
@@ -166,10 +165,6 @@ def analyze_video(video_path: str):
     verdict = "FAKE" if max_fake_prob >= DETECTION_THRESHOLD else "REAL"
     confidence = max_fake_prob if verdict == "FAKE" else (1.0 - max_fake_prob)
     
-    # Optional scaling to ensure UI shows high confidence for fake
-    if verdict == "FAKE" and confidence < 0.6:
-        confidence = min(0.9, confidence * 2.0)
-        
     print(f"Evaluated {len(chunked_sequences)} chunks across the whole video. Probabilities: {fake_probs}")
     
     # --- Grad-CAM Heatmap Generation ---
@@ -177,7 +172,7 @@ def analyze_video(video_path: str):
     if verdict == "FAKE" and len(chunked_sequences) > 0:
         try:
             worst_idx = int(np.argmax(fake_probs))
-            worst_chunk = tensor_batch[worst_idx].unsqueeze(0).clone().detach()
+            worst_chunk = chunked_sequences[worst_idx].unsqueeze(0).to(DEVICE).clone().detach()
             worst_chunk.requires_grad_(True)
 
             activations = []

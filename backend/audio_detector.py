@@ -12,7 +12,7 @@ class AudioDeepfakeDetector:
     """
     Multi-signal ensemble deepfake audio detector.
     
-    Layer 1: Fine-tuned Wav2Vec2 neural classifier (99.7% eval accuracy)
+    Layer 1: Pretrained or locally fine-tuned Wav2Vec2 classifier
     Layer 2: Statistical spectral analysis (spectral flatness, bandwidth, rolloff)
     Layer 3: MFCC distribution analysis
     Layer 4: Pitch/prosody micro-perturbation analysis (jitter & shimmer)
@@ -50,15 +50,8 @@ class AudioDeepfakeDetector:
             self._model_loaded = True
             print("Model loaded successfully.")
         except Exception as e:
-            print(f"\n[WARNING] Could not load audio model '{self.model_name}'.")
-            print(f"Reason: {e}")
-            print("This is likely due to an incomplete Git LFS download. Using MOCK inference for audio.\n")
-            self._model_loaded = False
-        except Exception as e:
-            print(f"\n[WARNING] Could not load audio model '{self.model_name}'.")
-            print(f"Reason: {e}")
-            print("Using FALLBACK mode with statistical analysis only.\n")
-            self._model_loaded = False
+            raise RuntimeError("Audio model unavailable; no prediction was produced") from e
+
     # ── Audio I/O ──────────────────────────────────────────────────────────
 
     def _load_audio_as_numpy(self, file_path: str, target_sr: int = 16000):
@@ -454,23 +447,7 @@ class AudioDeepfakeDetector:
 
     def analyze_audio(self, file_path: str):
         if not getattr(self, "_model_loaded", False):
-            print("[INFO] Using statistical-only analysis (neural model not available)")
-        if not getattr(self, "_model_loaded", False):
-            import random
-            print("[WARN] Using MOCK audio inference since the safetensors failed to load.")
-            return {
-                "verdict": "FAKE" if random.random() > 0.5 else "REAL",
-                "confidence": round(0.70 + (random.random() * 0.20), 2),
-                "media_type": "audio",
-                "artifacts_detected": ["MOCK: Missing LFS Weights", "MOCK: Unnatural MFCC distribution"],
-                "sub_scores": {
-                    "neural_model": 0.85,
-                    "spectral_analysis": 0.42,
-                    "mfcc_analysis": 0.88,
-                    "pitch_prosody": 0.65
-                },
-                "explanation": "Due to missing HuggingFace audio model weights (Git LFS smudge failure), this result was mocked."
-            }
+            raise RuntimeError("Audio model unavailable; no prediction was produced")
 
         try:
             # Load audio

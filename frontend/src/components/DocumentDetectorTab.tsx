@@ -1,3 +1,4 @@
+import { queuedFetch } from "../api";
 import { useState } from 'react';
 import { UploadCloud, FileText, CheckCircle, AlertOctagon, Activity, Crown, Download } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export default function DocumentDetectorTab({ credits, setCredits }: DocumentDet
     formData.append('file', file);
 
     try {
-      const response = await fetch(`${API_BASE}/analyze/document`, {
+      const response = await queuedFetch(`${API_BASE}/analyze/document`, {
         method: 'POST',
         body: formData,
       });

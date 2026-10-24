@@ -1,13 +1,3 @@
-services:
-  - type: web
-    name: drishti-deepfake
-    runtime: python
-    pythonVersion: 3.10
-    buildCommand: "cd backend && pip install -r requirements.txt"
-    startCommand: "cd backend && uvicorn main:app --host 0.0.0.0 --port 10000"
-    plan: free
-    envVars:
-      - key: PORT
-        value: 10000
-      - key: PYTHONUNBUFFERED
-        value: "1"
+# The old single-process Render blueprint did not include Redis or an inference worker.
+# Use compose.yaml for the local stack. Configure shared storage and a worker explicitly
+# before attempting a hosted deployment. No deployment has been performed or validated.
