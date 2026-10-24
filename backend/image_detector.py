@@ -1,4 +1,4 @@
-"""Pretrained image classifier adapter; no fabricated forensic features."""
+"""Classify uploaded images with a pretrained model."""
 import hashlib
 import io
 import os
@@ -38,8 +38,8 @@ class ImageDeepfakeDetector:
             "confidence_percent": round(confidence * 100, 1),
             "probability": probability, "model": self.model_name,
             "artifacts_detected": [],
-            "explanation": "Pretrained image classifier output. The score is not a calibrated certainty, "
-                           "and the classifier does not establish authenticity or localize manipulation.",
+            "explanation": "This model score has not been calibrated. "
+                           "It does not establish authenticity or identify which pixels were edited.",
             "legal": {"file_hash_sha256": hashlib.sha256(content).hexdigest(),
                       "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
                       "model_version": self.model_name},
