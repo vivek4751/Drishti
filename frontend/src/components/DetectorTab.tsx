@@ -1,3 +1,4 @@
+import { queuedFetch } from "../api";
 import { useState } from 'react';
 import { UploadCloud, FileVideo, Image as ImageIcon, CheckCircle, AlertOctagon, Activity, FileAudio, FileText, Crown, Download, Brain, BarChart3, Music, Mic } from 'lucide-react';
 
@@ -46,13 +47,13 @@ export default function DetectorTab({ acceptType, typeLabel, description, credit
     if (file.type.includes('audio')) endpoint = `${API_BASE}/analyze/audio`;
     else if (file.type.includes('video')) endpoint = `${API_BASE}/analyze/video`;
     else if (file.type.includes('image')) endpoint = `${API_BASE}/analyze/image`;
-    else throw new Error("Unsupported filetype");
+    else { setAnalyzing(false); return; }
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await queuedFetch(endpoint, {
         method: 'POST',
         body: formData,
       });
@@ -73,7 +74,7 @@ export default function DetectorTab({ acceptType, typeLabel, description, credit
         confidence: 0,
         media_type: file.type.includes('audio') ? 'audio' : file.type.includes('video') ? 'video' : 'image',
         artifacts_detected: ['Connection Error'],
-        explanation: 'Could not connect to the backend. Make sure the API server is running and VITE_API_BASE is set correctly.'
+        explanation: error instanceof Error ? error.message : 'Analysis failed'
       });
     } finally {
       setAnalyzing(false);
